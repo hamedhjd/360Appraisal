@@ -5,6 +5,7 @@ import model.SQLConnector;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
@@ -57,9 +58,9 @@ public class MainExecutor {
             String step = "2";
             String deliveryDate = "بهمن ۹۵";
             checkValidity();
-            List<String> userIds = findAllUserIds();
-//            List<String> userIds = new ArrayList<String>();
-//            userIds.add("6329");
+//            List<String> userIds = findAllUserIds();
+            List<String> userIds = new ArrayList<String>();
+            userIds.add("6031");
 //            userIds.add("6358");
 //            userIds.add("6101");
             generateKarnames(step, userIds, deliveryDate);
@@ -170,7 +171,7 @@ public class MainExecutor {
             Map<String, BigDecimal> kpiAverageSum = sectionKPIAverageSum.get(section);
             for (String kpiName : kpiAverageSum.keySet()) {
                 if (!sectionKPIAverageCount.get(section).get(kpiName).equals(BigDecimal.ZERO)) {
-                    kpiAverage.put(kpiName, kpiAverageSum.get(kpiName).divide(sectionKPIAverageCount.get(section).get(kpiName), RoundingMode.CEILING));
+                    kpiAverage.put(kpiName, kpiAverageSum.get(kpiName).divide(sectionKPIAverageCount.get(section).get(kpiName), RoundingMode.FLOOR));
                 } else {
                     kpiAverage.put(kpiName, BigDecimal.ZERO);
                 }
@@ -546,7 +547,7 @@ public class MainExecutor {
                 "شاخص هاي ارزيابي\n" +
                 "</th>\n" +
                 "<th>\n" +
-                "امتياز کسب شده جديد\n" +
+                "امتیاز ارزیابی سایرین\n" +
                 "</th>\n" +
                 "<th>\n" +
                 "امتیاز خود ارزیابی\n" +
@@ -598,7 +599,9 @@ public class MainExecutor {
         }
 
         String totalScore = assertNullity(karname.getTotalScoreInfo().getTotalScore());
+        totalScore = totalScore.equals("0") ? "-" : totalScore;
         String totalSelfScore = assertNullity(karname.getTotalScoreInfo().getTotalSelfScore());
+        totalSelfScore = totalSelfScore.equals("0") ? "-" : totalSelfScore;
         String totalIncompleteForms = assertNullity(karname.getTotalScoreInfo().getIncompleteFormsCount());
 
         newFile += ("</table></div><div ><table class='table_360'>\n" +
@@ -619,7 +622,7 @@ public class MainExecutor {
                 "<th>\n" +
                 " گروه\u200Cهاي ذينفع </th>\n" +
                 "<th>\n" +
-                "امتياز کسب شده جديد\n" +
+                "امتياز کسب شده\n" +
                 "</th>\n" +
                 "<th>\n" +
                 "ميانگين امتياز در بخش</th>\n" +
@@ -656,15 +659,15 @@ public class MainExecutor {
                         "<th>\n" +
                         "شاخص\u200Cهاي ارزيابي</th>\n" +
                         "<th>\n" +
-                        "دوره کنوني</th>\n" +
+                        "</th>\n" +
                         "<th>\n" +
-                        "دوره کنوني</th>\n" +
+                        "</th>\n" +
                         "<th>\n" +
-                        "دوره کنوني</th>\n" +
+                        "</th>\n" +
                         "<th>\n" +
-                        "دوره کنوني</th>\n" +
+                        "</th>\n" +
                         "<th>\n" +
-                        "دوره کنوني</th></tr><thead>\n");
+                        "</th></tr><thead>\n");
         index = 0;
         Map<String, Map<String, String>> traversedKpiMianginVazni_step = getKpiMianginVazniStepTraversed(kpiMianginVazni_step);
 
@@ -743,7 +746,7 @@ public class MainExecutor {
             HashMap<String, BigDecimal> sectionAverage = new LinkedHashMap<String, BigDecimal>();
             Map<String, BigDecimal> sectionAverageSum = categorySectionAverageSum.get(category);
             for (String sectionName : sectionAverageSum.keySet()) {
-                sectionAverage.put(sectionName, sectionAverageSum.get(sectionName).divide(categorySectionAverageCount.get(category).get(sectionName), RoundingMode.CEILING));
+                sectionAverage.put(sectionName, sectionAverageSum.get(sectionName).divide(categorySectionAverageCount.get(category).get(sectionName), RoundingMode.FLOOR));
             }
             categorySectionAverage.put(category, sectionAverage);
         }
@@ -805,10 +808,10 @@ public class MainExecutor {
                 }
             }
             if (categoryCount != 0) {
-                kpiMianginVazniTotal.put(kpiCode, kpiTotalScore.divide(new BigDecimal(categoryCount), RoundingMode.FLOOR).setScale(2, BigDecimal.ROUND_HALF_UP));
+                kpiMianginVazniTotal.put(kpiCode, kpiTotalScore.divide(new BigDecimal(categoryCount), RoundingMode.FLOOR).setScale(6, BigDecimal.ROUND_CEILING));
             }
             if (categoryCountSelf != 0) {
-                kpiMianginVazniTotalSelf.put(kpiCode, kpiTotalScoreSelf.divide(new BigDecimal(categoryCountSelf), RoundingMode.FLOOR).setScale(2, BigDecimal.ROUND_HALF_UP));
+                kpiMianginVazniTotalSelf.put(kpiCode, kpiTotalScoreSelf.divide(new BigDecimal(categoryCountSelf), RoundingMode.FLOOR).setScale(6, BigDecimal.ROUND_CEILING));
             }
         }
         BigDecimal sumScore = BigDecimal.ZERO;
@@ -829,11 +832,11 @@ public class MainExecutor {
         }
         BigDecimal totalScore = BigDecimal.ZERO;
         if (categoryCount != 0) {
-            totalScore = sumScore.divide(new BigDecimal(categoryCount), RoundingMode.FLOOR).setScale(2, BigDecimal.ROUND_HALF_UP);
+            totalScore = sumScore.divide(new BigDecimal(categoryCount), RoundingMode.FLOOR).setScale(6, BigDecimal.ROUND_CEILING);
         }
         BigDecimal totalScoreSelf = BigDecimal.ZERO;
         if (categoryCountSelf != 0) {
-            totalScoreSelf = sumScoreSelf.divide(new BigDecimal(categoryCountSelf), RoundingMode.FLOOR).setScale(2, BigDecimal.ROUND_HALF_UP);
+            totalScoreSelf = sumScoreSelf.divide(new BigDecimal(categoryCountSelf), RoundingMode.FLOOR).setScale(6, BigDecimal.ROUND_CEILING);
         }
 
         UserInfo userInfo = findUserInfoByUserId(userId);
@@ -1058,6 +1061,7 @@ public class MainExecutor {
                 "inner join mdl_question que on qa.questionid = que.id\n" +
                 "LEFT JOIN mdl_question_attempt_steps qas ON qas.questionattemptid = qa.id and qas.fraction is not null\n" +
                 "inner join mdl_user u on qas.userid = u.id\n" +
+//                "LEFT JOIN mdl_question_attempt_step_data qasd ON qasd.attemptstepid = qas.id\n";
                 "LEFT JOIN mdl_question_attempt_step_data qasd ON qasd.attemptstepid = qas.id\n" +
                 "where concat(q.id, '#', u.idnumber) not IN\n" +
                 "(\n" +
@@ -1087,7 +1091,7 @@ public class MainExecutor {
         if (resultSet.next()) {
             return Integer.parseInt(resultSet.getString(1));
         }
-        return 0;
+        return 3;
     }
 
     private static Integer findQuestionAssesseeFactor(String questionCode, String assesseeRoleCode) throws SQLException {
