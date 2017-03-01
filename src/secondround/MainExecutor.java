@@ -69,7 +69,6 @@ public class MainExecutor {
         }
     }
 
-
     private static void checkValidity() throws Exception {
         String queryStr = "select ur.userId from cal_user_role ur where ur.userId not in (select idnumber from mdl_user)";
         PreparedStatement statement = SQLConnector.conn.prepareStatement(queryStr);
