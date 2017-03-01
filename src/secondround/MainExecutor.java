@@ -56,11 +56,11 @@ public class MainExecutor {
     public static void main(String[] args) throws Exception {
         try {
             String step = "2";
-            String deliveryDate = "بهمن ۹۵";
+            String deliveryDate = "اسفند ۹۵";
             checkValidity();
-//            List<String> userIds = findAllUserIds();
-            List<String> userIds = new ArrayList<String>();
-            userIds.add("6031");
+            List<String> userIds = findAllUserIds();
+//            List<String> userIds = new ArrayList<String>();
+//            userIds.add("6031");
 //            userIds.add("6358");
 //            userIds.add("6101");
             generateKarnames(step, userIds, deliveryDate);
